@@ -154,6 +154,27 @@ _env = IncidentResponseEnvironment()
 # ---------------------------------------------------------------------------
 
 
+@app.get("/")
+async def root() -> dict[str, Any]:
+    """Root endpoint with environment information."""
+    return {
+        "name": "SRE Incident Response Environment",
+        "version": "0.1.0",
+        "description": "Train AI agents on production incident handling",
+        "tasks": ["triage", "rca", "cascading"],
+        "endpoints": {
+            "health": "/health",
+            "tasks": "/tasks",
+            "reset": "/reset (POST)",
+            "step": "/step (POST)",
+            "state": "/state",
+            "grader": "/grader",
+            "docs": "/docs",
+        },
+        "status": "ready",
+    }
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     """Health check endpoint."""
