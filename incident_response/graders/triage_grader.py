@@ -111,17 +111,18 @@ class TriageGrader(IncidentGrader):
             - wrong_action_penalty
         )
 
-        # Clamp to [0.0, 1.0]
-        total = max(0.001, min(0.999, raw_total))
+        # Clamp ALL scores to (0.0, 1.0) - strictly between, not inclusive
+        def clamp(v: float) -> float:
+            return max(0.001, min(0.999, v))
 
         return {
-            "classification": classification_score,
-            "investigation": investigation_score,
-            "diagnosis": 0.0,  # Not applicable for triage
-            "remediation": 0.0,  # Not applicable for triage
-            "acknowledgment": acknowledgment_score,
-            "communication": communication_score,
-            "time_penalty": time_penalty,
-            "wrong_action_penalty": wrong_action_penalty,
-            "total": total,
+            "classification": clamp(classification_score),
+            "investigation": clamp(investigation_score),
+            "diagnosis": clamp(0.0),  # Not applicable for triage
+            "remediation": clamp(0.0),  # Not applicable for triage
+            "acknowledgment": clamp(acknowledgment_score),
+            "communication": clamp(communication_score),
+            "time_penalty": clamp(time_penalty),
+            "wrong_action_penalty": clamp(wrong_action_penalty),
+            "total": clamp(raw_total),
         }
