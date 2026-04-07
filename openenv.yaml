@@ -1,0 +1,40 @@
+spec_version: 1
+name: incident_response
+type: space
+runtime: fastapi
+app: incident_response.server.app:app
+port: 8000
+description: >
+  SRE Incident Response Environment — train AI agents on production incident
+  handling with 3 progressive tasks (alert triage, root cause analysis,
+  cascading failure resolution) over a realistic 12-service e-commerce topology.
+tags:
+  - openenv
+  - sre
+  - incident-response
+  - real-world
+tasks:
+  - id: triage
+    name: Alert Triage
+    description: >
+      Triage incoming alerts for a single-service incident. Acknowledge the
+      incident and classify its severity (P1-P4) based on investigation of
+      logs and metrics.
+    difficulty: easy
+    max_steps: 15
+  - id: rca
+    name: Root Cause Analysis
+    description: >
+      Investigate a multi-service incident to identify the root cause.
+      Filter out red herrings, diagnose the specific failure mode, and
+      apply the correct remediation.
+    difficulty: medium
+    max_steps: 20
+  - id: cascading
+    name: Cascading Failure Resolution
+    description: >
+      Handle a cascading failure affecting 4-6+ services. Trace the
+      cascade to its origin, diagnose the root cause, apply targeted
+      remediation, and coordinate recovery of dependent services.
+    difficulty: hard
+    max_steps: 30
