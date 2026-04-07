@@ -54,8 +54,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application source code
 COPY incident_response/ ./incident_response/
+COPY server/ ./server/
 COPY scripts/ ./scripts/
-COPY pyproject.toml openenv.yaml ./
+COPY pyproject.toml openenv.yaml requirements.txt ./
 
 # Copy inference.py to root
 COPY inference.py ./
