@@ -188,13 +188,17 @@ async def list_tasks() -> list[TaskInfo]:
 
 
 @app.post("/reset", response_model=IncidentObservation)
-async def reset(request: ResetRequest) -> IncidentObservation:
+async def reset(request: Optional[ResetRequest] = None) -> IncidentObservation:
     """Reset the environment and start a new episode."""
     try:
+        # Handle empty body - use defaults
+        seed = request.seed if request else None
+        task_id = request.task_id if request else None
+        episode_id = request.episode_id if request else None
         return _env.reset(
-            seed=request.seed,
-            task_id=request.task_id,
-            episode_id=request.episode_id,
+            seed=seed,
+            task_id=task_id,
+            episode_id=episode_id,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
