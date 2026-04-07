@@ -217,7 +217,10 @@ async def step(action: IncidentAction) -> IncidentObservation:
 async def get_state() -> IncidentState:
     """Get the current internal state of the environment."""
     try:
-        return _env.state
+        state = _env.state
+        # Clamp total_reward to (0.0, 1.0) - strictly between, not inclusive
+        state.total_reward = max(0.001, min(0.999, state.total_reward))
+        return state
     except RuntimeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

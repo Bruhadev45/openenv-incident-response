@@ -447,7 +447,8 @@ class TriageGrader(BaseGrader):
         if state.step_count > 0:
             efficiency = max(0.0, 1.0 - (state.wasted_steps / state.step_count))
             score += 0.2 * efficiency
-        return score
+        # Clamp to (0.001, 0.999) - strictly between 0 and 1
+        return max(0.001, min(0.999, score))
 
 
 class RCAGrader(BaseGrader):
@@ -470,7 +471,8 @@ class RCAGrader(BaseGrader):
         # Communication: 10%
         if state.status_updates:
             score += 0.1
-        return score
+        # Clamp to (0.001, 0.999) - strictly between 0 and 1
+        return max(0.001, min(0.999, score))
 
 
 class CascadingGrader(BaseGrader):
@@ -499,7 +501,8 @@ class CascadingGrader(BaseGrader):
         if state.step_count > 0:
             efficiency = max(0.0, 1.0 - (state.wasted_steps / state.step_count))
             score += 0.1 * efficiency
-        return score
+        # Clamp to (0.001, 0.999) - strictly between 0 and 1
+        return max(0.001, min(0.999, score))
 
 
 # ---------------------------------------------------------------------------
