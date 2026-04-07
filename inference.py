@@ -23,13 +23,20 @@ import sys
 from typing import Any, Optional
 
 # ---------------------------------------------------------------------------
-# Configuration from Environment Variables
+# Configuration from Environment Variables (MANDATORY)
 # ---------------------------------------------------------------------------
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
-ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:8000")
+# Required environment variables per OpenEnv spec
+API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
+MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
+HF_TOKEN = os.getenv("HF_TOKEN")  # No default - required
+API_KEY = HF_TOKEN or os.getenv("API_KEY")  # Fallback for compatibility
+
+# Optional: for docker-based environments
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
+# Environment server URL
+ENV_BASE_URL = os.getenv("ENV_BASE_URL") or "http://localhost:8000"
 
 # Task configuration
 TASKS = ["triage", "rca", "cascading"]
@@ -44,7 +51,7 @@ MAX_TOKENS = 512
 # Validate Requirements
 # ---------------------------------------------------------------------------
 
-if not HF_TOKEN:
+if not API_KEY:
     print("Error: HF_TOKEN environment variable not set.", file=sys.stderr)
     print("Export your HuggingFace token: export HF_TOKEN='hf_...'", file=sys.stderr)
     sys.exit(1)
@@ -472,7 +479,7 @@ def main() -> None:
 
     # Initialize clients
     env_client = EnvClient(ENV_BASE_URL)
-    openai_client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+    openai_client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
     # Check environment health
     try:
