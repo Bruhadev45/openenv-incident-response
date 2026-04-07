@@ -403,8 +403,9 @@ class IncidentGrader:
             - wrong_action_penalty
         )
 
-        # Clamp to [0.0, 1.0]
-        total = max(0.0, min(1.0, raw_total))
+        # Clamp to (0.0, 1.0) - strictly between, not inclusive
+        # Validator requires scores > 0 and < 1
+        total = max(0.001, min(0.999, raw_total))
 
         return {
             "classification": classification_score,

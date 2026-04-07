@@ -280,7 +280,7 @@ class CascadingGrader(IncidentGrader):
         )
 
         # Clamp to [0.0, 1.0]
-        total = max(0.0, min(1.0, raw_total))
+        total = max(0.001, min(0.999, raw_total))
 
         return {
             "classification": classification_score,
