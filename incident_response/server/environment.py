@@ -1032,6 +1032,10 @@ class IncidentResponseEnvironment:
                 )
             )
 
+        # Clamp reward to (0.0, 1.0) - strictly between, not inclusive
+        # Validator requires all scores > 0 and < 1
+        clamped_reward = max(0.001, min(0.999, reward))
+
         return IncidentObservation(
             alerts=alerts,
             investigation_result=investigation_result,
@@ -1042,7 +1046,7 @@ class IncidentResponseEnvironment:
             task_id=self._state.task_id,
             task_description=task_config["description"],
             done=done,
-            reward=reward,
+            reward=clamped_reward,
             step_number=self._state.step_count,
             max_steps=self._state.max_steps,
         )
