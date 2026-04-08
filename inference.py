@@ -86,18 +86,23 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
     # Sanitize action string (remove newlines, limit length)
     action_clean = action.replace("\n", " ").replace("\r", "")[:100]
     print(
-        f"[STEP] step={step} action={action_clean} reward={reward:.2f} done={done_val} error={error_val}",
+        f"[STEP] step={step} action={action_clean} reward={reward:.3f} done={done_val} error={error_val}",
         flush=True,
     )
 
 
 def log_end(success: bool, steps: int, score: float, rewards: list[float]) -> None:
     """Log episode end in required format."""
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    rewards_str = ",".join(f"{r:.3f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rewards_str}",
         flush=True,
     )
+
+
+def clamp_strict_score(value: float) -> float:
+    """Clamp scores into the open interval required by submission validators."""
+    return max(0.001, min(0.999, value))
 
 
 # ---------------------------------------------------------------------------
@@ -437,7 +442,7 @@ def run_episode(
             # Extract reward and done status
             # Clamp reward to (0, 1) - strictly between, not inclusive
             raw_reward = obs.get("reward", 0.001)
-            reward = max(0.001, min(0.999, raw_reward))
+            reward = clamp_strict_score(raw_reward)
             done = obs.get("done", False)
 
             rewards.append(reward)
@@ -457,7 +462,7 @@ def run_episode(
             score = sum(rewards) if rewards else 0.001
 
         # Clamp score to (0, 1) - strictly between, not inclusive
-        score = max(0.001, min(0.999, score))
+        score = clamp_strict_score(score)
         success = score >= 0.1  # Threshold for success
 
     except Exception as e:
@@ -504,7 +509,7 @@ def main() -> None:
                 print(f"[DEBUG] Failed to run {task_id} seed={seed}: {e}", file=sys.stderr)
                 # Log a failed episode
                 log_start(task=task_id, env=BENCHMARK, model=MODEL_NAME)
-                log_end(success=False, steps=0, score=0.0, rewards=[])
+                log_end(success=False, steps=0, score=0.001, rewards=[])
 
     # Print summary to stderr (not part of required format)
     if all_scores:

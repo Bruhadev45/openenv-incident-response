@@ -54,6 +54,11 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 TASKS = ["triage", "rca", "cascading"]
 SEEDS = [42, 123, 456]
 
+
+def clamp_strict_score(value: float) -> float:
+    """Clamp scores into the open interval required by submission validators."""
+    return max(0.001, min(0.999, value))
+
 # System prompt for the SRE agent
 SYSTEM_PROMPT = """You are an expert Site Reliability Engineer (SRE) responding to a production incident.
 
@@ -369,10 +374,12 @@ def run_episode(
         scores = client.grader()
     except Exception as e:
         print(f"Grader error: {e}", file=sys.stderr)
-        scores = {"total": 0.0}
+        scores = {"total": 0.001}
+
+    scores["total"] = clamp_strict_score(float(scores.get("total", 0.001)))
 
     if verbose:
-        print(f"score={scores.get('total', 0.0):.3f}")
+        print(f"score={scores.get('total', 0.001):.3f}")
 
     return scores
 
@@ -419,7 +426,7 @@ def main() -> None:
         print(f"\nTask: {task_id}")
         for seed in SEEDS:
             scores = run_episode(env_client, openai_client, task_id, seed, verbose=True)
-            task_scores[task_id].append(scores.get("total", 0.0))
+            task_scores[task_id].append(clamp_strict_score(float(scores.get("total", 0.001))))
 
     # Calculate averages
     print()
@@ -432,13 +439,13 @@ def main() -> None:
 
     for task_id in TASKS:
         scores = task_scores[task_id]
-        avg = sum(scores) / len(scores) if scores else 0.0
-        results[task_id] = round(avg, 3)
+        avg = sum(scores) / len(scores) if scores else 0.001
+        results[task_id] = clamp_strict_score(round(avg, 3))
         all_scores.extend(scores)
         print(f"  {task_id}: {avg:.3f} (scores: {[round(s, 3) for s in scores]})")
 
-    overall_avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
-    results["average"] = round(overall_avg, 3)
+    overall_avg = sum(all_scores) / len(all_scores) if all_scores else 0.001
+    results["average"] = clamp_strict_score(round(overall_avg, 3))
 
     print()
     print(f"  Overall average: {overall_avg:.3f}")
