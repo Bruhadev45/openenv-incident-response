@@ -435,7 +435,9 @@ def run_episode(
             steps_taken = step
 
             # Extract reward and done status
-            reward = obs.get("reward", 0.0)
+            # Clamp reward to (0, 1) - strictly between, not inclusive
+            raw_reward = obs.get("reward", 0.001)
+            reward = max(0.001, min(0.999, raw_reward))
             done = obs.get("done", False)
 
             rewards.append(reward)
@@ -449,18 +451,18 @@ def run_episode(
         # Get final scores from grader
         try:
             grader_result = env_client.grader()
-            score = grader_result.get("total", 0.0)
+            score = grader_result.get("total", 0.001)
         except Exception as e:
             print(f"[DEBUG] Grader error: {e}", file=sys.stderr)
-            score = sum(rewards)
+            score = sum(rewards) if rewards else 0.001
 
-        # Clamp score to [0, 1]
-        score = max(0.0, min(1.0, score))
+        # Clamp score to (0, 1) - strictly between, not inclusive
+        score = max(0.001, min(0.999, score))
         success = score >= 0.1  # Threshold for success
 
     except Exception as e:
         print(f"[DEBUG] Episode error: {e}", file=sys.stderr)
-        score = 0.0
+        score = 0.001
         success = False
 
     # Log episode end
