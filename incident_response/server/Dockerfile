@@ -19,8 +19,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only dependency files first for better layer caching
-COPY pyproject.toml ./
+# Copy package metadata and source before installation
+COPY pyproject.toml README.md ./
+COPY incident_response/ ./incident_response/
+COPY inference.py ./
 
 # Create a virtual environment and install dependencies
 RUN python -m venv /opt/venv
@@ -52,10 +54,11 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy application source code
+# Copy application source code and runtime metadata
 COPY incident_response/ ./incident_response/
 COPY scripts/ ./scripts/
-COPY pyproject.toml openenv.yaml ./
+COPY pyproject.toml README.md openenv.yaml ./
+COPY inference.py ./
 
 # Ensure scripts are executable
 RUN chmod +x scripts/*.py 2>/dev/null || true
